@@ -19,7 +19,7 @@ set EXE_NAME_RELEASE=%EXE_NAME%_RELEASE
 set INCLUDE_PATHS=/I../vendor/include/GLEW
 
 set LIB_PATHS=/LIBPATH:"../vendor/lib/GLEW/x64"
-set LINK_LIBRARIES=user32.lib glew32.lib
+set LINK_LIBRARIES=user32.lib glew32.lib opengl32.lib gdi32.lib
 
 set INSTALL_DLL[0]=vendor\bin\GLEW\x64\glew32.dll
 
