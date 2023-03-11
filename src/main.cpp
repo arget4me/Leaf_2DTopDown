@@ -1,10 +1,10 @@
-#include <Windows.h>
 #include <GL/glew.h>
 #include <GL/wglew.h>
 #include <stdint.h>
-#include <wingdi.h>
+#include "platform.h"
 #include <iostream>
 #include "game.h"
+#include "graphics\primitives.h"
 
 struct WindowHandler
 { 
@@ -168,6 +168,8 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCm
     // Show the window and paint its contents. 
     ShowWindow(window.windowHandle, nCmdShow); 
     UpdateWindow(window.windowHandle); 
+
+    LEAF::Quad quad;
  
     // Start the message loop.
     glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
@@ -189,6 +191,8 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCm
         // Update the screen and render here
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        glDrawElements(GL_TRIANGLES, sizeof(quad.indices) / sizeof(decltype(quad.indices[0])), GL_UNSIGNED_INT, 0);
+        
 
 
         SwapBuffers(window.deviceContext);

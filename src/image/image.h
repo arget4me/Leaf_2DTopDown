@@ -19,6 +19,6 @@ struct Image
     MemoryBlock buffer;
 };
 
-Image LoadImage(std::string filepath, MemoryManager& persistentMemory);
+Image LoadImageFile(std::string filepath, MemoryManager& persistentMemory);
 
 };

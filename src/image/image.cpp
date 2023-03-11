@@ -5,9 +5,10 @@
 namespace LEAF
 {
 
-Image LoadImage(std::string filepath, MemoryManager& persistentMemory)
+Image LoadImageFile(std::string filepath, MemoryManager& persistentMemory)
 {
     static int nextId = 0;
+    stbi_set_flip_vertically_on_load(1);
 
     int width = 0;
     int height = 0;

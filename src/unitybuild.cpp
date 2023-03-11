@@ -3,3 +3,4 @@
 #include "graphics\shader.cpp"
 #include "image\image.cpp"
 #include "memory\memorymanager.cpp"
+#include "graphics\primitives.cpp"

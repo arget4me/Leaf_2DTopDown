@@ -1,5 +1,6 @@
 #include "shader.h"
 #include <gl/glew.h>
+#include "platform.h"
 
 namespace LEAF{
 
@@ -30,13 +31,15 @@ GLuint LoadShader(std::string source, GLenum type)
     glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
     if(!compiled)
     {
-        GLint infoLen = 0;
-        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
-        // TODO: Print error code here
-        // if(infoLen > 1)
-        // {
-        //      glGetShaderInfoLog(shader, infoLen, NULL, infoLogBuffer);
-        // }
+        GLint maxLength = 0;
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
+
+        std::string errorLog;
+		errorLog.resize(maxLength);
+		glGetShaderInfoLog(shader, maxLength, &maxLength, &errorLog[0]);
+
+        MessageBoxA(0, errorLog.c_str(), "Shader compile error", 0);
+
         glDeleteShader(shader);
         return 0;
     }
@@ -80,8 +83,7 @@ ShaderProgram CreateShaderProgram(ShaderProgramSource* source)
 		errorLog.resize(maxLength);
 		glGetProgramInfoLog(shaderProgram, maxLength, &maxLength, &errorLog[0]);
 
-		// ERROR_LOG("shader link failed: " << shader.vertex_source_path << ", " << shader.fragment_source_path <<"\n");
-		// DEBUG_LOG(errorLog << "\n");
+        MessageBoxA(0, errorLog.c_str(), "Shader Program link error", 0);
 		return {nullptr, 0};
 	}
 
