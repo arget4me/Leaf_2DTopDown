@@ -4,8 +4,9 @@
 #include <stdint.h>
 #include <wingdi.h>
 #include <iostream>
+#include "game.h"
 
-struct GameHandler
+struct WindowHandler
 { 
     HINSTANCE hInstance; 
     HWND windowHandle;
@@ -29,34 +30,24 @@ LRESULT WinProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     return Result;
 }
 
-bool CreateDummyGLWindow(const GameHandler game)
+
+bool CreateDummyGLWindow(const WindowHandler window)
 {    
     // Must first create an opengl context to load the gl extensions needed to create a proper opengl context
     DWORD WindowCreateFlags = WS_OVERLAPPEDWINDOW | CS_OWNDC;
     HWND windowHandle = CreateWindow(TEXT("MainWndClass"), TEXT("Sample"), 
         WindowCreateFlags, CW_USEDEFAULT, CW_USEDEFAULT, 
         CW_USEDEFAULT, CW_USEDEFAULT, (HWND) NULL, 
-        (HMENU) NULL, game.hInstance, (LPVOID) NULL);
+        (HMENU) NULL, window.hInstance, (LPVOID) NULL);
 
-    PIXELFORMATDESCRIPTOR pfd =
-    {
-        sizeof(PIXELFORMATDESCRIPTOR),
-        1,
-        PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER,    // Flags
-        PFD_TYPE_RGBA,        // The kind of framebuffer. RGBA or palette.
-        32,                   // Colordepth of the framebuffer.
-        0, 0, 0, 0, 0, 0,
-        0,
-        0,
-        0,
-        0, 0, 0, 0,
-        24,                   // Number of bits for the depthbuffer
-        8,                    // Number of bits for the stencilbuffer
-        0,                    // Number of Aux buffers in the framebuffer.
-        PFD_MAIN_PLANE,
-        0,
-        0, 0, 0
-    };
+    PIXELFORMATDESCRIPTOR pfd{};
+    pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+    pfd.nVersion = 1;
+    pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+    pfd.iPixelType = PFD_TYPE_RGBA;
+    pfd.cColorBits = 32;
+    pfd.cDepthBits = 24;
+    pfd.cStencilBits = 8;
 
     HDC deviceContext = GetDC(windowHandle);
     int pixelFormatNumber = ChoosePixelFormat(deviceContext, &pfd);
@@ -65,32 +56,25 @@ bool CreateDummyGLWindow(const GameHandler game)
     HGLRC renderingContext = wglCreateContext(deviceContext);
     wglMakeCurrent (deviceContext, renderingContext);
 
-    struct CallOutOfScope{
-        HGLRC renderingContext;
-        CallOutOfScope(HGLRC renderingContext) : renderingContext(renderingContext) {}
-
-        ~CallOutOfScope() {
-            wglDeleteContext(renderingContext);
-        }
-    }defer(renderingContext);
-
     if(glewInit() != GLEW_OK)
     {
         OutputDebugStringA("Failed to init glew for dummy context!\n");
+        wglDeleteContext(renderingContext);
         return false;
     }
     
+    wglDeleteContext(renderingContext);
     return true;
 }
 
-bool CreateOpenGLWindow(GameHandler& game)
+bool CreateOpenGLWindow(WindowHandler& window)
 {
     DWORD WindowCreateFlags = WS_OVERLAPPEDWINDOW | CS_OWNDC;
-    game.windowHandle = CreateWindow(TEXT("MainWndClass"), TEXT("Sample"), 
+    window.windowHandle = CreateWindow(TEXT("MainWndClass"), TEXT("Sample"), 
         WindowCreateFlags, CW_USEDEFAULT, CW_USEDEFAULT, 
         CW_USEDEFAULT, CW_USEDEFAULT, (HWND) NULL, 
-        (HMENU) NULL, game.hInstance, (LPVOID) NULL);
-    game.deviceContext = GetDC(game.windowHandle);
+        (HMENU) NULL, window.hInstance, (LPVOID) NULL);
+    window.deviceContext = GetDC(window.windowHandle);
 
     const int pixelFormatAttributes[] =
     {
@@ -106,14 +90,13 @@ bool CreateOpenGLWindow(GameHandler& game)
         0, // End
     };
 
-
     int pixelFormatNumber;
     UINT numFormats;
-    wglChoosePixelFormatARB(game.deviceContext, pixelFormatAttributes, NULL, 1, &pixelFormatNumber, &numFormats);
+    wglChoosePixelFormatARB(window.deviceContext, pixelFormatAttributes, NULL, 1, &pixelFormatNumber, &numFormats);
 
     PIXELFORMATDESCRIPTOR pfd;
-    DescribePixelFormat(game.deviceContext, pixelFormatNumber, sizeof(pfd), &pfd);
-    SetPixelFormat(game.deviceContext, pixelFormatNumber, &pfd);
+    DescribePixelFormat(window.deviceContext, pixelFormatNumber, sizeof(pfd), &pfd);
+    SetPixelFormat(window.deviceContext, pixelFormatNumber, &pfd);
 
      // Specify that we want to create an OpenGL 3.3 core profile context
     int glContextAttributes[] = {
@@ -123,14 +106,13 @@ bool CreateOpenGLWindow(GameHandler& game)
         0,
     };
 
-    game.renderingContext = wglCreateContextAttribsARB(game.deviceContext, 0, glContextAttributes);
-    if (!game.renderingContext) {
+    window.renderingContext = wglCreateContextAttribsARB(window.deviceContext, 0, glContextAttributes);
+    if (!window.renderingContext) {
         OutputDebugStringA("Failed to create Opengl context\n");
         return false;
     }
 
-    wglMakeCurrent (game.deviceContext, game.renderingContext);
-    MessageBoxA(0,(char*)glGetString(GL_VERSION), "OPENGL VERSION",0);
+    wglMakeCurrent (window.deviceContext, window.renderingContext);
 
     #define FRAMEBUFFER_SRGB 0x8DB9
     #define MULTISAMPLE_ARB  0x809D
@@ -146,7 +128,8 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCm
     MSG msg;
     BOOL bRet; 
     WNDCLASS wc{};
-    GameHandler game{};
+    WindowHandler window{};
+    LEAF::GameState gameState;
     UNREFERENCED_PARAMETER(lpszCmdLine); 
  
     // Register the window class for the main window. 
@@ -163,25 +146,28 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCm
             return FALSE; 
     } 
  
-    game.hInstance = hInstance;
-    if(!CreateDummyGLWindow(game))
+    window.hInstance = hInstance;
+    if(!CreateDummyGLWindow(window))
     {
         return -1;
     }
 
-    if (!CreateOpenGLWindow(game))
+    if (!CreateOpenGLWindow(window))
     {
         return -1;
     }
  
     // If the main window cannot be created, terminate 
     // the application. 
-    if (!game.windowHandle) 
+    if (!window.windowHandle) 
         return FALSE; 
  
+
+    LEAF::InitializeGame(gameState);
+
     // Show the window and paint its contents. 
-    ShowWindow(game.windowHandle, nCmdShow); 
-    UpdateWindow(game.windowHandle); 
+    ShowWindow(window.windowHandle, nCmdShow); 
+    UpdateWindow(window.windowHandle); 
  
     // Start the message loop.
     glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
@@ -203,7 +189,9 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCm
         // Update the screen and render here
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        SwapBuffers(game.deviceContext);
+
+
+        SwapBuffers(window.deviceContext);
     } 
  
     // Return the exit code to the system. 

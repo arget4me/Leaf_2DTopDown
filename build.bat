@@ -24,7 +24,7 @@ set LINK_LIBRARIES=user32.lib glew32.lib opengl32.lib gdi32.lib
 set INSTALL_DLL[0]=vendor\bin\GLEW\x64\glew32.dll
 
 set SOURCE_PATH=../src/
-set SOURCE_FILES=%SOURCE_PATH%main.cpp
+set SOURCE_FILES=%SOURCE_PATH%main.cpp %SOURCE_PATH%unitybuild.cpp
 
 mkdir build
 
