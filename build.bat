@@ -16,7 +16,7 @@ set EXE_NAME=%PROJECT_NAME%
 set EXE_NAME_DEBUG=%EXE_NAME%_DEBUG
 set EXE_NAME_RELEASE=%EXE_NAME%_RELEASE
 
-set INCLUDE_PATHS=/I../vendor/include/GLEW
+set INCLUDE_PATHS=/I../vendor/include/GLEW /I../vendor/include/stb /I../src
 
 set LIB_PATHS=/LIBPATH:"../vendor/lib/GLEW/x64"
 set LINK_LIBRARIES=user32.lib glew32.lib opengl32.lib gdi32.lib
@@ -27,6 +27,8 @@ set SOURCE_PATH=../src/
 set SOURCE_FILES=%SOURCE_PATH%main.cpp %SOURCE_PATH%unitybuild.cpp
 
 mkdir build
+
+    Xcopy data build\data /c /v /q /i /s /e /r /h /y
 
     echo Copy dll files to build directory
     set "dllIterator=0"

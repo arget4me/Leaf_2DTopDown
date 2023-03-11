@@ -2,11 +2,24 @@
 #include <GL/glew.h>
 #include "graphics\renderer.h"
 #include "graphics\shader.h"
+#include "image\image.h"
 
 namespace LEAF {
 
     void InitializeGame(GameState& gameState)
     {
+        constexpr uint32_t TOTALSIZE = 128 * MEGABYTE;
+        constexpr uint32_t TEMP_TOTALSIZE = 8 * MEGABYTE;
+        constexpr uint32_t BLOCKSIZE = 64;
+        constexpr uint32_t NUMBLOCKS = TOTALSIZE / BLOCKSIZE;
+        constexpr uint32_t TEMP_NUMBLOCKS = TEMP_TOTALSIZE / BLOCKSIZE;
+        gameState.persistentMemory = MemoryManager(BLOCKSIZE, NUMBLOCKS);
+        gameState.temporaryMemory = MemoryManager(BLOCKSIZE, TEMP_NUMBLOCKS, true);
+        Image debug_image = LoadImage("data/images/debug_image.png", gameState.persistentMemory);
+        Image debug_image2 = LoadImage("data/images/debug_image.png", gameState.persistentMemory);
+        Image debug_image3 = LoadImage("data/images/debug_image.png", gameState.persistentMemory);
+        Image debug_image4 = LoadImage("data/images/debug_image.png", gameState.persistentMemory);
+        Image debug_image5 = LoadImage("data/images/debug_image.png", gameState.persistentMemory);
         gameState.running = true;
         ShaderSource vertex;
         vertex.ShaderCode = "#version 330 core\n"

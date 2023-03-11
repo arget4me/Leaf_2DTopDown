@@ -1,3 +1,5 @@
 #include "game.cpp"
 #include "graphics\renderer.cpp"
 #include "graphics\shader.cpp"
+#include "image\image.cpp"
+#include "memory\memorymanager.cpp"
