@@ -26,7 +26,7 @@ struct RenderJob
     //  disregard the default state changes optimization sorting. 
     //  State changes optimizations is still performed for RenderJobs with the same priority.
     uint32_t priority = 0;
-    std::vector<uint32_t> materialIds;
+    uint32_t materialId;
 };
 
 struct Renderer

@@ -87,14 +87,12 @@ namespace LEAF {
 
             MeshGL mesh;
             mesh.VAO = VAO;
-            mesh.VBO = VBO;
-            mesh.EBO = EBO;
             mesh.NumIndices = sizeof(quad.indices) / sizeof(decltype(quad.indices[0]));
             uint32_t meshId = RegisterMeshGL(mesh, &gameState.renderer);
 
             RenderJob job;
             job.meshId = meshId;
-            job.materialIds = {materialID};
+            job.materialId = materialID;
             SubmitRenderJob(job, &gameState.renderer);
         }
 

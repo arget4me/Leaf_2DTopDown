@@ -92,18 +92,13 @@ void RenderAllRenderJobs(const Renderer* renderer)
             MeshGL mesh = renderer->meshesGL[job.meshId];
 
             glBindVertexArray(mesh.VAO);
-
-            for (const uint32_t materialId : job.materialIds)
-            {
-                // TODO: How do you properly support multiple materials? this will just renderer the full mesh several times with different shaders.
-                Material material = renderer->materials[materialId];
-                ShaderProgram shader = renderer->shaderPrograms[material.shaderId];
-                glUseProgram(shader.id);
-                
-                // TODO: textures
-                // TODO: uniforms
-                glDrawElements(GL_TRIANGLES, mesh.NumIndices, GL_UNSIGNED_INT, 0);
-            }
+            Material material = renderer->materials[job.materialId];
+            ShaderProgram shader = renderer->shaderPrograms[material.shaderId];
+            glUseProgram(shader.id);
+            
+            // TODO: textures
+            // TODO: uniforms
+            glDrawElements(GL_TRIANGLES, mesh.NumIndices, GL_UNSIGNED_INT, 0);
             
             // glBindBuffer(GL_ARRAY_BUFFER, 0);
             // glBindVertexArray(0);
