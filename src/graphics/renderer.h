@@ -8,8 +8,6 @@ namespace LEAF {
 struct MeshGL
 {
     GLuint VAO;
-    GLuint VBO;
-    GLuint EBO;
     uint32_t NumIndices;
 };
 

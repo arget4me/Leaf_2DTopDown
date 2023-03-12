@@ -92,8 +92,6 @@ void RenderAllRenderJobs(const Renderer* renderer)
             MeshGL mesh = renderer->meshesGL[job.meshId];
 
             glBindVertexArray(mesh.VAO);
-            glBindBuffer(GL_ARRAY_BUFFER, mesh.VBO);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.EBO);
 
             for (const uint32_t materialId : job.materialIds)
             {
