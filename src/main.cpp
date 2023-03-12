@@ -191,9 +191,7 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCm
         // Update the screen and render here
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glDrawElements(GL_TRIANGLES, sizeof(quad.indices) / sizeof(decltype(quad.indices[0])), GL_UNSIGNED_INT, 0);
-        
-
+        LEAF::UpdateAndRenderGame(gameState);
 
         SwapBuffers(window.deviceContext);
     } 

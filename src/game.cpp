@@ -40,9 +40,14 @@ namespace LEAF {
                             "}\n\0";
                             //"   FragColor = vec4(UV.x, UV.y, 0.0f, 1.0f);\n" 
 
-        gameState.programSource = CreateShaderProgramSource(vertex, fragment);
-        gameState.program = CreateShaderProgram(&gameState.programSource);
-        glUseProgram(gameState.program.id);
+        ShaderProgramSource programSource = CreateShaderProgramSource(vertex, fragment);
+        ShaderProgram program = CreateShaderProgram(&programSource);
+
+        uint32_t shaderProgramID = RegisterShaderProgram(program, &gameState.renderer);
+
+        Material material;
+        material.shaderId = shaderProgramID;
+        uint32_t materialID = RegisterMaterial(material, &gameState.renderer);
         
         Quad quad;
         for (int i = 0; i < sizeof(quad.position) / sizeof(decltype(quad.position[0])); i++ )
@@ -76,9 +81,21 @@ namespace LEAF {
             glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2), (void*)sizeof(quad.position));
             glEnableVertexAttribArray(1);
 
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+            glBindVertexArray(0);
 
-            // glBindBuffer(GL_ARRAY_BUFFER, 0);
-            // glBindVertexArray(0);
+            MeshGL mesh;
+            mesh.VAO = VAO;
+            mesh.VBO = VBO;
+            mesh.EBO = EBO;
+            mesh.NumIndices = sizeof(quad.indices) / sizeof(decltype(quad.indices[0]));
+            uint32_t meshId = RegisterMeshGL(mesh, &gameState.renderer);
+
+            RenderJob job;
+            job.meshId = meshId;
+            job.materialIds = {materialID};
+            SubmitRenderJob(job, &gameState.renderer);
         }
 
 
@@ -97,5 +114,10 @@ namespace LEAF {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, debug_image.width, debug_image.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, debug_image.buffer.byteBuffer);
             glGenerateMipmap(GL_TEXTURE_2D);
         }
+    }
+
+    void UpdateAndRenderGame(GameState& gameState)
+    {
+        RenderAllRenderJobs(&gameState.renderer);
     }
 };
